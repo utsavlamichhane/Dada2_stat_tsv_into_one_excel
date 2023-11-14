@@ -1,0 +1,29 @@
+
+
+import pandas as pd
+import os
+
+# Directory containing your TSV files
+tsv_directory = '/Users/ugalab4/Desktop/Buccal_microbiome/analysis_1/tsvs'  # Update this path
+
+# Excel file to save
+excel_filename = '/Users/ugalab4/Desktop/Buccal_microbiome/analysis_1/tsvs/consolidated_data.xlsx'  # Update this path
+
+# Create a Pandas Excel writer using openpyxl as the engine
+writer = pd.ExcelWriter(excel_filename, engine='openpyxl')
+
+# Iterate through all TSV files in the directory
+for filename in os.listdir(tsv_directory):
+    if filename.endswith('.tsv'):
+        file_path = os.path.join(tsv_directory, filename)
+        # Read the TSV file into a Pandas DataFrame
+        df = pd.read_csv(file_path, sep='\t')
+        # Write the DataFrame to a sheet named after the TSV file
+        sheet_name = os.path.splitext(filename)[0]
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+# Close the Excel writer to save the file
+writer.close()
+
+print(f"All TSV files have been consolidated into {excel_filename}")
+
