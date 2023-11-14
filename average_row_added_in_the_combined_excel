@@ -1,0 +1,50 @@
+###used macro in the excel file to arrange the sheets in ascending or descending 
+## for the maco the codes are in my website https://www.utsavlamichhane.com/  
+
+
+
+import pandas as pd
+import os
+
+# Function to flatten MultiIndex columns
+def flatten_columns(df):
+    df.columns = [' '.join(col).strip() for col in df.columns.values]
+    return df
+
+# Original and new Excel file paths
+original_excel_filename = '/Users/ugalab4/Desktop/Buccal_microbiome/analysis_1/tsvs/consolidated_data.xlsx'
+new_excel_filename = '/Users/ugalab4/Desktop/Buccal_microbiome/analysis_1/tsvs/consolidated_data_with_averages.xlsx'
+
+# Create a Pandas Excel writer for the new file
+writer = pd.ExcelWriter(new_excel_filename, engine='openpyxl')
+
+# Read each sheet, calculate averages, and write to the new file
+with pd.ExcelFile(original_excel_filename) as xls:
+    for sheet_name in xls.sheet_names:
+        df = pd.read_excel(xls, sheet_name=sheet_name, header=[0, 1])
+
+        # Flatten the MultiIndex columns
+        df = flatten_columns(df)
+
+        # Calculate the average of each numeric column
+        averages = df.select_dtypes(include='number').mean()
+
+        # Prepare the averages as a new DataFrame row
+        averages_row = pd.DataFrame([averages], index=['Average'])
+
+        # Set non-numeric columns to NaN or some other placeholder if needed
+        for col in df.columns:
+            if col not in averages_row:
+                averages_row[col] = 'Average'
+
+        # Concatenate the averages row to the original DataFrame
+        df = pd.concat([df, averages_row])
+
+        # Write the modified DataFrame to a new sheet in the new Excel file
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+# Close the Excel writer to save the new file
+writer.close()
+
+print(f"Updated Excel file with averages saved in {new_excel_filename}")
+
